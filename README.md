@@ -1,20 +1,22 @@
 # AI Experience
 
-An interactive AI experience in your terminal.
+A web-based interactive AI experience.
 
 ## Features
 
-- **Interactive CLI**: Engage with a simulated AI.
-- **Simple and Lightweight**: No heavy dependencies.
+- **Interactive Terminal UI**: Engage with a simulated AI in a retro-style terminal.
+- **Typing Simulation**: Realistic AI typing effect.
+- **Lightweight**: Built with vanilla HTML, CSS, and JavaScript.
 
 ## Getting Started
 
-### Prerequisites
+Simply open `index.html` in your browser to start the experience.
 
-- Python 3.x
+## GitHub Pages
 
-### Running the Experience
+This project is designed to be hosted on GitHub Pages. To deploy:
 
-```bash
-python3 src/ai_experience.py
-```
+1. Push the code to a GitHub repository.
+2. Go to **Settings** > **Pages**.
+3. Select the branch (e.g., `main`) and folder (e.g., `/root`).
+4. Save and your site will be live!
