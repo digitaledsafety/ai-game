@@ -23,6 +23,7 @@ const responses = [
 let history = [];
 let historyIndex = -1;
 let currentInput = '';
+let sessionStartTime;
 
 async function printSlow(text, element, className = 'ai-text') {
     const span = document.createElement('span');
@@ -53,31 +54,33 @@ async function executeCommand(command) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         output.innerHTML = '';
         document.getElementById('input-line').style.display = 'none';
+        printInstant("AI: SYSTEM OFFLINE", output);
         return;
     } else if (command === 'clear') {
         output.innerHTML = '';
         return;
     } else if (command === 'reboot') {
-        await printSlow("Rebooting system...", output);
+        await printSlow("AI: Rebooting system...", output);
         await new Promise(resolve => setTimeout(resolve, 1000));
         location.reload();
         return;
     } else if (command === 'help') {
-        await printSlow("Available commands: help, clear, reboot, exit, quit, date, whoami, about, history, clear-history", output);
+        await printSlow("AI: Available commands: help, clear, reboot, exit, quit, date, whoami, about, history, clear-history, uptime, status", output);
         return;
     } else if (command === 'date') {
-        await printSlow(`Current date and time: ${new Date().toLocaleString()}`, output);
+        await printSlow(`AI: Current date and time: ${new Date().toLocaleString()}`, output);
         return;
     } else if (command === 'whoami') {
-        await printSlow("User identity: Guest", output);
+        await printSlow("AI: User identity: Guest", output);
         return;
     } else if (command === 'about') {
-        await printSlow("AI Experience: A web-based retro terminal simulation.", output);
+        await printSlow("AI: AI Experience: A web-based retro terminal simulation.", output);
         return;
     } else if (command === 'history') {
         if (history.length === 0) {
-            await printSlow("No command history available.", output);
+            await printSlow("AI: No command history available.", output);
         } else {
+            printInstant("AI: Command History:", output);
             for (let i = 0; i < history.length; i++) {
                 printInstant(`${i + 1}: ${history[i]}`, output);
             }
@@ -86,7 +89,20 @@ async function executeCommand(command) {
     } else if (command === 'clear-history') {
         history = [];
         localStorage.removeItem('terminalHistory');
-        await printSlow("Command history has been cleared.", output);
+        await printSlow("AI: Command history has been cleared.", output);
+        return;
+    } else if (command === 'uptime') {
+        const uptime = Math.floor((Date.now() - sessionStartTime) / 1000);
+        const minutes = Math.floor(uptime / 60);
+        const seconds = uptime % 60;
+        await printSlow(`AI: System Uptime: ${minutes}m ${seconds}s`, output);
+        return;
+    } else if (command === 'status') {
+        await printSlow("AI: System Status Report:", output);
+        printInstant("  - CPU: Optimal", output);
+        printInstant("  - Memory: 42% utilized", output);
+        printInstant("  - Connection: Secure", output);
+        printInstant("  - AI Core: Synchronized", output);
         return;
     }
 
@@ -159,6 +175,7 @@ window.addEventListener('click', () => {
 });
 
 window.onload = async () => {
+    sessionStartTime = Date.now();
     const savedHistory = localStorage.getItem('terminalHistory');
     if (savedHistory) {
         try {
