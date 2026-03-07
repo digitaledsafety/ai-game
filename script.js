@@ -114,8 +114,8 @@ const commands = {
     echo: {
         usage: "echo [text]",
         description: "Repeat the input text",
-        action: async (args) => {
-            await printSlow(`AI: ${args || ''}`, output);
+        action: async (args, rawArgs) => {
+            await printSlow(`AI: ${rawArgs || ''}`, output);
         }
     },
     uname: {
@@ -159,6 +159,23 @@ const commands = {
             await printSlow("AI: User identity: Guest", output);
         }
     },
+    pwd: {
+        description: "Print working directory",
+        action: async () => {
+            await printSlow("AI: /", output);
+        }
+    },
+    cd: {
+        usage: "cd [directory]",
+        description: "Change directory",
+        action: async (args) => {
+            if (!args || args.length === 0 || args[0] === "/" || args[0] === ".") {
+                // Stay in root
+                return;
+            }
+            await printSlow(`AI: Directory not found: ${args[0]}`, output);
+        }
+    },
     ls: {
         description: "List files in the current directory",
         action: async () => {
@@ -173,11 +190,11 @@ const commands = {
         usage: "man [command]",
         description: "Display the manual for a command",
         action: async (args) => {
-            if (!args) {
+            if (!args || args.length === 0) {
                 await printSlow("AI: Usage: man [command]", output);
                 return;
             }
-            const commandName = args.toLowerCase();
+            const commandName = args[0].toLowerCase();
             if (Object.prototype.hasOwnProperty.call(commands, commandName)) {
                 const cmd = commands[commandName];
                 await printSlow(`AI: Manual for ${commandName}:`, output);
@@ -194,19 +211,23 @@ const commands = {
         usage: "cat [filename]",
         description: "Display file content",
         action: async (args) => {
-            if (!args) {
+            if (!args || args.length === 0) {
                 await printSlow("AI: Usage: cat [filename]", output);
                 return;
             }
-            const content = files[args];
-            if (content) {
-                await printSlow(`AI: Content of ${args}:`, output);
-                const lines = content.split('\n');
-                for (const line of lines) {
-                    printInstant(`  ${line}`, output);
+
+            for (const filename of args) {
+                const actualFilename = Object.keys(files).find(f => f.toLowerCase() === filename.toLowerCase());
+                if (actualFilename) {
+                    const content = files[actualFilename];
+                    await printSlow(`AI: Content of ${actualFilename}:`, output);
+                    const lines = content.split('\n');
+                    for (const line of lines) {
+                        printInstant(`  ${line}`, output);
+                    }
+                } else {
+                    await printSlow(`AI: File not found: ${filename}`, output);
                 }
-            } else {
-                await printSlow(`AI: File not found: ${args}`, output);
             }
         }
     },
@@ -229,7 +250,7 @@ const commands = {
         description: "Change terminal theme (green, amber, blue)",
         action: async (args) => {
             const themes = ['green', 'amber', 'blue'];
-            const theme = args ? args.toLowerCase() : '';
+            const theme = (args && args[0]) ? args[0].toLowerCase() : '';
             if (themes.includes(theme)) {
                 document.body.className = theme === 'green' ? '' : `theme-${theme}`;
                 localStorage.setItem('terminalTheme', theme);
@@ -261,10 +282,11 @@ async function executeCommand(commandText) {
     const trimmedCommand = commandText.trim();
     const parts = trimmedCommand.split(/\s+/);
     const commandName = parts[0].toLowerCase();
-    const args = trimmedCommand.substring(parts[0].length).trimStart();
+    const args = parts.slice(1);
+    const rawArgs = trimmedCommand.substring(parts[0].length).trimStart();
 
     if (Object.prototype.hasOwnProperty.call(commands, commandName)) {
-        await commands[commandName].action(args);
+        await commands[commandName].action(args, rawArgs);
     } else {
         await new Promise(resolve => setTimeout(resolve, 500));
         const randomResponse = responses[Math.floor(Math.random() * responses.length)];
