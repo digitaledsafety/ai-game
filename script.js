@@ -12,6 +12,12 @@ const responses = [
     "System check: All systems functional. Please continue.",
     "Interesting. My algorithms hadn't considered that.",
     "Can you provide more context on that topic?",
+    "Data analysis suggests several possibilities. What's your priority?",
+    "I'm learning more about human behavior every day.",
+    "That aligns with my current data models.",
+    "Interesting. Let's dig deeper into that.",
+    "I'm here to assist. What else is on your mind?",
+    "That's a valid point. I'll remember that.",
 ];
 
 let history = [];
@@ -44,12 +50,15 @@ function printInstant(text, element, className = 'ai-text') {
 async function executeCommand(command) {
     if (command === 'exit' || command === 'quit') {
         await printSlow("AI: It was a pleasure interacting with you. Goodbye!", output);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        output.innerHTML = '';
+        document.getElementById('input-line').style.display = 'none';
         return;
     } else if (command === 'clear') {
         output.innerHTML = '';
         return;
     } else if (command === 'help') {
-        await printSlow("Available commands: help, clear, exit, quit, date, whoami, about", output);
+        await printSlow("Available commands: help, clear, exit, quit, date, whoami, about, history, clear-history", output);
         return;
     } else if (command === 'date') {
         await printSlow(`Current date and time: ${new Date().toLocaleString()}`, output);
@@ -59,6 +68,20 @@ async function executeCommand(command) {
         return;
     } else if (command === 'about') {
         await printSlow("AI Experience: A web-based retro terminal simulation.", output);
+        return;
+    } else if (command === 'history') {
+        if (history.length === 0) {
+            await printSlow("No command history available.", output);
+        } else {
+            for (let i = 0; i < history.length; i++) {
+                await printSlow(`${i + 1}: ${history[i]}`, output);
+            }
+        }
+        return;
+    } else if (command === 'clear-history') {
+        history = [];
+        localStorage.removeItem('terminalHistory');
+        await printSlow("Command history has been cleared.", output);
         return;
     }
 
@@ -131,7 +154,12 @@ window.addEventListener('click', () => {
 window.onload = async () => {
     const savedHistory = localStorage.getItem('terminalHistory');
     if (savedHistory) {
-        history = JSON.parse(savedHistory);
+        try {
+            history = JSON.parse(savedHistory);
+        } catch (e) {
+            console.error('Failed to parse history from localStorage:', e);
+            localStorage.removeItem('terminalHistory');
+        }
     }
 
     userInput.disabled = true;
