@@ -87,6 +87,12 @@ const commands = {
             }
             const source = args[0];
             const dest = args[1];
+
+            if (source.toLowerCase() === dest.toLowerCase()) {
+                await printSlow(`AI: Source and destination are the same: ${source}`, output);
+                return;
+            }
+
             const actualSource = Object.keys(files).find(f => f.toLowerCase() === source.toLowerCase());
             if (actualSource) {
                 files[dest] = files[actualSource];
@@ -202,7 +208,10 @@ const commands = {
                 return;
             }
             const filename = args[0];
-            const content = rawArgs.substring(filename.length).replace(/^\s/, '');
+            // rawArgs is content after "write " (with one space potentially stripped)
+            // We need to find where the filename ends in rawArgs
+            const filenameMatch = rawArgs.match(new RegExp('^\\s*' + filename.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')));
+            const content = filenameMatch ? rawArgs.substring(filenameMatch[0].length).trimStart() : '';
             files[filename] = content;
             await printSlow(`AI: Written to ${filename}`, output);
         }
@@ -270,6 +279,12 @@ const commands = {
             }
             const source = args[0];
             const dest = args[1];
+
+            if (source.toLowerCase() === dest.toLowerCase()) {
+                await printSlow(`AI: Source and destination are the same: ${source}`, output);
+                return;
+            }
+
             const actualSource = Object.keys(files).find(f => f.toLowerCase() === source.toLowerCase());
             if (actualSource) {
                 files[dest] = files[actualSource];
@@ -436,7 +451,9 @@ async function executeCommand(commandText) {
     const parts = trimmedCommand.split(/\s+/);
     const commandName = parts[0].toLowerCase();
     const args = parts.slice(1);
-    const rawArgs = trimmedCommand.substring(parts[0].length).replace(/^\s/, '');
+    // Find where the command name ends in the trimmed command to extract raw arguments
+    const commandMatch = commandText.match(/^\s*(\S+)/);
+    const rawArgs = commandMatch ? commandText.substring(commandMatch[0].length).replace(/^ /, '') : '';
 
     if (Object.prototype.hasOwnProperty.call(commands, commandName)) {
         await commands[commandName].action(args, rawArgs);
