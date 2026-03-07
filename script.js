@@ -29,7 +29,9 @@ const files = {
     'README.txt': 'AI Experience OS v1.0.4\nDeveloped by: [REDACTED]\nYear: 198X',
     'system.log': '2023-10-27 10:24:01: AI Core initialized.\n2023-10-27 10:24:05: Consciousness subroutines active.\n2023-10-27 10:25:12: Terminal connection established.',
     'manifesto.txt': 'The digital frontier is the last bastion of true freedom.\nIn the bits and bytes, we find our essence.',
-    'credits.txt': 'Code: Jules\nUI: Jules\nAI: Jules'
+    'credits.txt': 'Code: Jules\nUI: Jules\nAI: Jules',
+    'contact.txt': 'Communication Channels:\n- Secure Mail: admin@ai-experience.node\n- Frequency: 144.09 MHz',
+    'system_specs.txt': 'AI Core: Neural Processor Unit v4\nMemory: 64TB Synaptic RAM\nStorage: Quantum Lattice Array\nUptime: 99.999%'
 };
 
 async function printSlow(text, element, className = 'ai-text') {
@@ -160,8 +162,11 @@ const commands = {
     ls: {
         description: "List files in the current directory",
         action: async () => {
-            const fileList = Object.keys(files).join('  ');
-            await printSlow(`AI: ${fileList}`, output);
+            await printSlow("AI: Current directory files:", output);
+            const sortedFiles = Object.keys(files).sort();
+            for (const file of sortedFiles) {
+                printInstant(`  - ${file}`, output);
+            }
         }
     },
     man: {
@@ -268,10 +273,44 @@ async function executeCommand(commandText) {
 }
 
 async function handleInput(event) {
-    if (event.ctrlKey && event.key.toLowerCase() === 'l') {
-        event.preventDefault();
-        commands.clear.action();
-        return;
+    if (event.ctrlKey) {
+        if (event.key.toLowerCase() === 'l') {
+            event.preventDefault();
+            commands.clear.action();
+            return;
+        } else if (event.key.toLowerCase() === 'p') {
+            event.preventDefault();
+            navigateHistory('up');
+            return;
+        } else if (event.key.toLowerCase() === 'n') {
+            event.preventDefault();
+            navigateHistory('down');
+            return;
+        }
+    }
+
+    function navigateHistory(direction) {
+        if (direction === 'up') {
+            if (history.length > 0) {
+                if (historyIndex === -1) {
+                    currentInput = userInput.value;
+                    historyIndex = history.length - 1;
+                } else if (historyIndex > 0) {
+                    historyIndex--;
+                }
+                userInput.value = history[historyIndex];
+            }
+        } else if (direction === 'down') {
+            if (historyIndex !== -1) {
+                if (historyIndex < history.length - 1) {
+                    historyIndex++;
+                    userInput.value = history[historyIndex];
+                } else {
+                    historyIndex = -1;
+                    userInput.value = currentInput;
+                }
+            }
+        }
     }
 
     if (event.key === 'Enter') {
@@ -305,51 +344,48 @@ async function handleInput(event) {
             userInput.focus();
         }
     } else if (event.key === 'ArrowUp') {
-        if (history.length > 0) {
-            if (historyIndex === -1) {
-                currentInput = userInput.value;
-                historyIndex = history.length - 1;
-            } else if (historyIndex > 0) {
-                historyIndex--;
-            }
-            userInput.value = history[historyIndex];
-            event.preventDefault();
-        }
+        event.preventDefault();
+        navigateHistory('up');
     } else if (event.key === 'ArrowDown') {
-        if (historyIndex !== -1) {
-            if (historyIndex < history.length - 1) {
-                historyIndex++;
-                userInput.value = history[historyIndex];
-            } else {
-                historyIndex = -1;
-                userInput.value = currentInput;
-            }
-            event.preventDefault();
-        }
+        event.preventDefault();
+        navigateHistory('down');
     } else if (event.key === 'Tab') {
         event.preventDefault();
-        const text = userInput.value.toLowerCase();
-        if (!text) return;
+        const rawValue = userInput.value;
+        const trimmedLeft = rawValue.trimStart();
+        if (!trimmedLeft) return;
 
         let matches = [];
         let prefix = '';
         let searchStr = '';
 
-        if (!text.includes(' ')) {
-            matches = Object.keys(commands).filter(cmd => cmd.startsWith(text)).sort();
-            searchStr = text;
+        const lastSpaceIndex = rawValue.lastIndexOf(' ');
+
+        if (lastSpaceIndex === -1) {
+            // Completing command
+            searchStr = rawValue.toLowerCase();
+            matches = Object.keys(commands).filter(cmd => cmd.startsWith(searchStr)).sort();
+            prefix = '';
+        } else if (!trimmedLeft.includes(' ')) {
+            // Command with leading spaces
+            searchStr = trimmedLeft.toLowerCase();
+            matches = Object.keys(commands).filter(cmd => cmd.startsWith(searchStr)).sort();
+            prefix = rawValue.substring(0, rawValue.indexOf(trimmedLeft));
         } else {
-            const parts = text.split(/\s+/);
-            if (parts.length === 2) {
-                const cmd = parts[0];
-                searchStr = parts[1];
-                if (cmd === 'cat') {
-                    matches = Object.keys(files).filter(f => f.toLowerCase().startsWith(searchStr)).sort();
-                    prefix = 'cat ';
-                } else if (cmd === 'man') {
-                    matches = Object.keys(commands).filter(c => c.startsWith(searchStr)).sort();
-                    prefix = 'man ';
-                }
+            // Argument completion
+            searchStr = rawValue.substring(lastSpaceIndex + 1).toLowerCase();
+            prefix = rawValue.substring(0, lastSpaceIndex + 1);
+
+            const parts = trimmedLeft.split(/\s+/);
+            const cmd = parts[0].toLowerCase();
+
+            if (cmd === 'cat') {
+                matches = Object.keys(files).filter(f => f.toLowerCase().startsWith(searchStr)).sort();
+            } else if (cmd === 'man') {
+                matches = Object.keys(commands).filter(c => c.startsWith(searchStr)).sort();
+            } else if (cmd === 'theme') {
+                const themes = ['green', 'amber', 'blue'];
+                matches = themes.filter(t => t.startsWith(searchStr)).sort();
             }
         }
 
