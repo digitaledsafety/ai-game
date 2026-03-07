@@ -57,8 +57,13 @@ async function executeCommand(command) {
     } else if (command === 'clear') {
         output.innerHTML = '';
         return;
+    } else if (command === 'reboot') {
+        await printSlow("Rebooting system...", output);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        location.reload();
+        return;
     } else if (command === 'help') {
-        await printSlow("Available commands: help, clear, exit, quit, date, whoami, about, history, clear-history", output);
+        await printSlow("Available commands: help, clear, reboot, exit, quit, date, whoami, about, history, clear-history", output);
         return;
     } else if (command === 'date') {
         await printSlow(`Current date and time: ${new Date().toLocaleString()}`, output);
@@ -74,7 +79,7 @@ async function executeCommand(command) {
             await printSlow("No command history available.", output);
         } else {
             for (let i = 0; i < history.length; i++) {
-                await printSlow(`${i + 1}: ${history[i]}`, output);
+                printInstant(`${i + 1}: ${history[i]}`, output);
             }
         }
         return;
@@ -95,7 +100,7 @@ async function handleInput(event) {
         const text = userInput.value.trim();
 
         if (!text) {
-            printInstant('>', output, 'user-text');
+            printInstant('> ', output, 'user-text');
             userInput.value = '';
             return;
         }
@@ -148,14 +153,22 @@ async function handleInput(event) {
 userInput.addEventListener('keydown', handleInput);
 
 window.addEventListener('click', () => {
-    userInput.focus();
+    if (window.getSelection().toString() === '') {
+        userInput.focus();
+    }
 });
 
 window.onload = async () => {
     const savedHistory = localStorage.getItem('terminalHistory');
     if (savedHistory) {
         try {
-            history = JSON.parse(savedHistory);
+            const parsed = JSON.parse(savedHistory);
+            if (Array.isArray(parsed)) {
+                history = parsed;
+            } else {
+                console.warn('History in localStorage is not an array, clearing it.');
+                localStorage.removeItem('terminalHistory');
+            }
         } catch (e) {
             console.error('Failed to parse history from localStorage:', e);
             localStorage.removeItem('terminalHistory');
