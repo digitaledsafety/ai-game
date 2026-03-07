@@ -29,7 +29,9 @@ const files = {
     'README.txt': 'AI Experience OS v1.0.4\nDeveloped by: [REDACTED]\nYear: 198X',
     'system.log': '2023-10-27 10:24:01: AI Core initialized.\n2023-10-27 10:24:05: Consciousness subroutines active.\n2023-10-27 10:25:12: Terminal connection established.',
     'manifesto.txt': 'The digital frontier is the last bastion of true freedom.\nIn the bits and bytes, we find our essence.',
-    'credits.txt': 'Code: Jules\nUI: Jules\nAI: Jules'
+    'credits.txt': 'Code: Jules\nUI: Jules\nAI: Jules',
+    'about.txt': 'AI Experience Terminal\nA simulation of an 80s-era artificial intelligence interface.\nVersion: 1.0.4',
+    'contact.txt': 'Contact: admin@example.ai\nFor emergency system overrides, please contact your supervisor.'
 };
 
 async function printSlow(text, element, className = 'ai-text') {
@@ -301,33 +303,70 @@ async function handleInput(event) {
         }
     } else if (event.key === 'Tab') {
         event.preventDefault();
-        const text = userInput.value.toLowerCase();
-        if (!text || text.includes(' ')) return;
+        const rawValue = userInput.value;
+        const trimmedLeft = rawValue.replace(/^\s+/, "");
+        const leadingSpaces = rawValue.substring(0, rawValue.length - trimmedLeft.length);
 
-        const matches = Object.keys(commands).filter(cmd => cmd.startsWith(text)).sort();
-        if (matches.length === 1) {
-            userInput.value = matches[0];
-        } else if (matches.length > 1) {
-            // Find longest common prefix
-            let i = text.length;
-            let prefix = text;
-            while (true) {
-                let nextChar = matches[0][i];
-                if (!nextChar) break;
-                if (matches.every(m => m[i] === nextChar)) {
-                    prefix += nextChar;
-                    i++;
+        if (!trimmedLeft) return;
+
+        const parts = trimmedLeft.split(/\s+/);
+        if (parts.length === 1) {
+            // Command completion
+            const text = parts[0].toLowerCase();
+            const matches = Object.keys(commands).filter(cmd => cmd.startsWith(text)).sort();
+            if (matches.length === 1) {
+                userInput.value = leadingSpaces + matches[0];
+            } else if (matches.length > 1) {
+                // Find longest common prefix
+                let i = text.length;
+                let prefix = text;
+                while (true) {
+                    let nextChar = matches[0][i];
+                    if (!nextChar) break;
+                    if (matches.every(m => m[i] === nextChar)) {
+                        prefix += nextChar;
+                        i++;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (prefix !== text) {
+                    userInput.value = leadingSpaces + prefix;
                 } else {
-                    break;
+                    // List matches if no further common prefix
+                    printInstant(`> ${rawValue}`, output, 'user-text');
+                    printInstant(matches.join('  '), output, 'ai-text');
                 }
             }
+        } else if (parts.length === 2 && parts[0].toLowerCase() === 'cat') {
+            // Argument completion for 'cat'
+            const text = parts[1].toLowerCase();
+            const matches = Object.keys(files).filter(f => f.toLowerCase().startsWith(text)).sort();
+            if (matches.length === 1) {
+                userInput.value = `${leadingSpaces}${parts[0]} ${matches[0]}`;
+            } else if (matches.length > 1) {
+                // Find longest common prefix
+                let i = text.length;
+                let prefix = text;
+                while (true) {
+                    let nextChar = matches[0][i];
+                    if (!nextChar) break;
+                    if (matches.every(m => m.toLowerCase()[i] === nextChar.toLowerCase())) {
+                        prefix += nextChar;
+                        i++;
+                    } else {
+                        break;
+                    }
+                }
 
-            if (prefix !== text) {
-                userInput.value = prefix;
-            } else {
-                // List matches if no further common prefix
-                printInstant(`> ${userInput.value}`, output, 'user-text');
-                printInstant(matches.join('  '), output, 'ai-text');
+                if (prefix.toLowerCase() !== text.toLowerCase()) {
+                    userInput.value = `${leadingSpaces}${parts[0]} ${prefix}`;
+                } else {
+                    // List matches
+                    printInstant(`> ${rawValue}`, output, 'user-text');
+                    printInstant(matches.join('  '), output, 'ai-text');
+                }
             }
         }
     }
