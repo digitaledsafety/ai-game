@@ -77,6 +77,41 @@ const commands = {
             }
         }
     },
+    touch: {
+        usage: "touch [filename]",
+        description: "Create a new empty file",
+        action: async (args) => {
+            if (!args || args.length === 0) {
+                await printSlow("AI: Usage: touch [filename]", output);
+                return;
+            }
+            const filename = args[0];
+            if (Object.prototype.hasOwnProperty.call(files, filename)) {
+                await printSlow(`AI: File already exists: ${filename}`, output);
+            } else {
+                files[filename] = '';
+                await printSlow(`AI: Created file: ${filename}`, output);
+            }
+        }
+    },
+    rm: {
+        usage: "rm [filename]",
+        description: "Delete a file",
+        action: async (args) => {
+            if (!args || args.length === 0) {
+                await printSlow("AI: Usage: rm [filename]", output);
+                return;
+            }
+            const filename = args[0];
+            const actualFilename = Object.keys(files).find(f => f.toLowerCase() === filename.toLowerCase());
+            if (actualFilename) {
+                delete files[actualFilename];
+                await printSlow(`AI: Deleted file: ${actualFilename}`, output);
+            } else {
+                await printSlow(`AI: File not found: ${filename}`, output);
+            }
+        }
+    },
     about: {
         description: "Information about this AI",
         action: async () => {
@@ -183,11 +218,23 @@ const commands = {
         }
     },
     ls: {
+        usage: "ls [-l]",
         description: "List files in the current directory",
-        action: async () => {
-            await printSlow("AI: Current directory files:", output);
-            const sortedFiles = Object.keys(files).sort();
-            printInstant(`  ${sortedFiles.join('  ')}`, output);
+        action: async (args) => {
+            const isLongFormat = args && args.includes('-l');
+            if (isLongFormat) {
+                await printSlow("AI: Current directory files (long format):", output);
+                const sortedFiles = Object.keys(files).sort();
+                for (const filename of sortedFiles) {
+                    const size = files[filename].length;
+                    const date = "Oct 27 198X"; // Simulated date
+                    printInstant(`  -rw-r--r--  1 guest  guest  ${size.toString().padStart(5)} ${date} ${filename}`, output);
+                }
+            } else {
+                await printSlow("AI: Current directory files:", output);
+                const sortedFiles = Object.keys(files).sort();
+                printInstant(`  ${sortedFiles.join('  ')}`, output);
+            }
         }
     },
     man: {
@@ -208,6 +255,34 @@ const commands = {
                 }
             } else {
                 await printSlow(`AI: No manual entry for: ${commandName}`, output);
+            }
+        }
+    },
+    grep: {
+        usage: "grep [pattern] [filename]",
+        description: "Search for a pattern in a file",
+        action: async (args) => {
+            if (!args || args.length < 2) {
+                await printSlow("AI: Usage: grep [pattern] [filename]", output);
+                return;
+            }
+            const pattern = args[0];
+            const filename = args[1];
+            const actualFilename = Object.keys(files).find(f => f.toLowerCase() === filename.toLowerCase());
+            if (actualFilename) {
+                const content = files[actualFilename];
+                const lines = content.split('\n');
+                const matches = lines.filter(line => line.includes(pattern));
+                if (matches.length > 0) {
+                    await printSlow(`AI: Matches in ${actualFilename}:`, output);
+                    for (const match of matches) {
+                        printInstant(`  ${match}`, output);
+                    }
+                } else {
+                    await printSlow(`AI: No matches found for "${pattern}" in ${actualFilename}.`, output);
+                }
+            } else {
+                await printSlow(`AI: File not found: ${filename}`, output);
             }
         }
     },
@@ -299,7 +374,7 @@ async function executeCommand(commandText) {
     const parts = trimmedCommand.split(/\s+/);
     const commandName = parts[0].toLowerCase();
     const args = parts.slice(1);
-    const rawArgs = trimmedCommand.substring(parts[0].length).trimStart();
+    const rawArgs = trimmedCommand.substring(parts[0].length);
 
     if (Object.prototype.hasOwnProperty.call(commands, commandName)) {
         await commands[commandName].action(args, rawArgs);
