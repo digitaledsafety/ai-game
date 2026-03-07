@@ -49,60 +49,95 @@ function printInstant(text, element, className = 'ai-text') {
 }
 
 async function executeCommand(command) {
-    if (command === 'exit' || command === 'quit') {
+    const lowerCommand = command.toLowerCase();
+
+    if (lowerCommand === 'exit' || lowerCommand === 'quit') {
         await printSlow("AI: It was a pleasure interacting with you. Goodbye!", output);
         await new Promise(resolve => setTimeout(resolve, 1000));
         output.innerHTML = '';
         document.getElementById('input-line').style.display = 'none';
         printInstant("AI: SYSTEM OFFLINE", output);
         return;
-    } else if (command === 'clear') {
+    } else if (lowerCommand === 'clear') {
         output.innerHTML = '';
         return;
-    } else if (command === 'reboot') {
+    } else if (lowerCommand === 'reboot') {
         await printSlow("AI: Rebooting system...", output);
         await new Promise(resolve => setTimeout(resolve, 1000));
         location.reload();
         return;
-    } else if (command === 'help') {
-        await printSlow("AI: Available commands: help, clear, reboot, exit, quit, date, whoami, about, history, clear-history, uptime, status", output);
+    } else if (lowerCommand === 'help') {
+        await printSlow("AI: Available Commands:", output);
+        printInstant("  - help: Show this help message", output);
+        printInstant("  - about: Information about this AI", output);
+        printInstant("  - status: System status report", output);
+        printInstant("  - uptime: Current session duration", output);
+        printInstant("  - date: Current date and time", output);
+        printInstant("  - time: Current system time", output);
+        printInstant("  - echo [text]: Repeat the input text", output);
+        printInstant("  - uname: System information", output);
+        printInstant("  - socials: View social links", output);
+        printInstant("  - history: View command history", output);
+        printInstant("  - clear-history: Clear command history", output);
+        printInstant("  - whoami: Current user identity", output);
+        printInstant("  - clear: Clear the terminal screen", output);
+        printInstant("  - reboot: Restart the AI system", output);
+        printInstant("  - exit/quit: Terminate the session", output);
         return;
-    } else if (command === 'date') {
+    } else if (lowerCommand === 'date') {
         await printSlow(`AI: Current date and time: ${new Date().toLocaleString()}`, output);
         return;
-    } else if (command === 'whoami') {
+    } else if (lowerCommand === 'whoami') {
         await printSlow("AI: User identity: Guest", output);
         return;
-    } else if (command === 'about') {
+    } else if (lowerCommand === 'about') {
         await printSlow("AI: AI Experience: A web-based retro terminal simulation.", output);
         return;
-    } else if (command === 'history') {
+    } else if (lowerCommand === 'history') {
         if (history.length === 0) {
             await printSlow("AI: No command history available.", output);
         } else {
-            printInstant("AI: Command History:", output);
+            await printSlow("AI: Command History:", output);
             for (let i = 0; i < history.length; i++) {
-                printInstant(`${i + 1}: ${history[i]}`, output);
+                printInstant(`  ${i + 1}: ${history[i]}`, output);
             }
         }
         return;
-    } else if (command === 'clear-history') {
+    } else if (lowerCommand === 'clear-history') {
         history = [];
         localStorage.removeItem('terminalHistory');
         await printSlow("AI: Command history has been cleared.", output);
         return;
-    } else if (command === 'uptime') {
+    } else if (lowerCommand === 'uptime') {
         const uptime = Math.floor((Date.now() - sessionStartTime) / 1000);
         const minutes = Math.floor(uptime / 60);
         const seconds = uptime % 60;
         await printSlow(`AI: System Uptime: ${minutes}m ${seconds}s`, output);
         return;
-    } else if (command === 'status') {
+    } else if (lowerCommand === 'status') {
+        const cpuStatus = ["Optimal", "Normal", "Stable", "Efficient"][Math.floor(Math.random() * 4)];
+        const memUsage = Math.floor(Math.random() * 30) + 20; // 20% - 50%
         await printSlow("AI: System Status Report:", output);
-        printInstant("  - CPU: Optimal", output);
-        printInstant("  - Memory: 42% utilized", output);
+        printInstant(`  - CPU: ${cpuStatus}`, output);
+        printInstant(`  - Memory: ${memUsage}% utilized`, output);
         printInstant("  - Connection: Secure", output);
         printInstant("  - AI Core: Synchronized", output);
+        return;
+    } else if (lowerCommand === 'time') {
+        const time = new Date().toLocaleTimeString();
+        await printSlow(`AI: Current system time: ${time}`, output);
+        return;
+    } else if (lowerCommand === 'uname') {
+        await printSlow("AI: AI-OS 1.0.4-generic x86_64 WebKit", output);
+        return;
+    } else if (lowerCommand === 'socials') {
+        await printSlow("AI: Connecting to social nodes...", output);
+        printInstant("  - GitHub: https://github.com/example", output);
+        printInstant("  - Twitter: https://twitter.com/example", output);
+        return;
+    } else if (lowerCommand.startsWith('echo ')) {
+        const text = command.substring(5);
+        await printSlow(`AI: ${text}`, output);
         return;
     }
 
@@ -133,7 +168,7 @@ async function handleInput(event) {
         printInstant(`> ${text}`, output, 'user-text');
 
         try {
-            await executeCommand(text.toLowerCase());
+            await executeCommand(text);
         } catch (error) {
             console.error('Error executing command:', error);
             await printSlow("AI: An error occurred while processing your request.", output);
