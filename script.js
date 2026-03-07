@@ -25,6 +25,13 @@ let historyIndex = -1;
 let currentInput = '';
 let sessionStartTime;
 
+const files = {
+    'README.txt': 'AI Experience OS v1.0.4\nDeveloped by: [REDACTED]\nYear: 198X',
+    'system.log': '2023-10-27 10:24:01: AI Core initialized.\n2023-10-27 10:24:05: Consciousness subroutines active.\n2023-10-27 10:25:12: Terminal connection established.',
+    'manifesto.txt': 'The digital frontier is the last bastion of true freedom.\nIn the bits and bytes, we find our essence.',
+    'credits.txt': 'Code: Jules\nUI: Jules\nAI: Jules'
+};
+
 async function printSlow(text, element, className = 'ai-text') {
     const span = document.createElement('span');
     span.className = className;
@@ -53,8 +60,10 @@ const commands = {
         description: "Show this help message",
         action: async () => {
             await printSlow("AI: Available Commands:", output);
-            for (const [name, cmd] of Object.entries(commands)) {
+            const sortedCommandNames = Object.keys(commands).sort();
+            for (const name of sortedCommandNames) {
                 if (name === 'quit') continue;
+                const cmd = commands[name];
                 const displayName = name === 'exit' ? 'exit/quit' : (cmd.usage || name);
                 printInstant(`  - ${displayName}: ${cmd.description}`, output);
             }
@@ -104,11 +113,7 @@ const commands = {
         usage: "echo [text]",
         description: "Repeat the input text",
         action: async (args) => {
-            if (!args) {
-                await printSlow("AI: ", output);
-            } else {
-                await printSlow(`AI: ${args}`, output);
-            }
+            await printSlow(`AI: ${args || ''}`, output);
         }
     },
     uname: {
@@ -152,6 +157,33 @@ const commands = {
             await printSlow("AI: User identity: Guest", output);
         }
     },
+    ls: {
+        description: "List files in the current directory",
+        action: async () => {
+            const fileList = Object.keys(files).join('  ');
+            await printSlow(`AI: ${fileList}`, output);
+        }
+    },
+    cat: {
+        usage: "cat [filename]",
+        description: "Display file content",
+        action: async (args) => {
+            if (!args) {
+                await printSlow("AI: Usage: cat [filename]", output);
+                return;
+            }
+            const content = files[args];
+            if (content) {
+                await printSlow(`AI: Content of ${args}:`, output);
+                const lines = content.split('\n');
+                for (const line of lines) {
+                    printInstant(`  ${line}`, output);
+                }
+            } else {
+                await printSlow(`AI: File not found: ${args}`, output);
+            }
+        }
+    },
     clear: {
         description: "Clear the terminal screen",
         action: async () => {
@@ -174,6 +206,7 @@ const commands = {
             const theme = args ? args.toLowerCase() : '';
             if (themes.includes(theme)) {
                 document.body.className = theme === 'green' ? '' : `theme-${theme}`;
+                localStorage.setItem('terminalTheme', theme);
                 await printSlow(`AI: Theme changed to ${theme}.`, output);
             } else {
                 await printSlow("AI: Available themes: green, amber, blue.", output);
@@ -199,9 +232,10 @@ const commands = {
 };
 
 async function executeCommand(commandText) {
-    const parts = commandText.trim().split(/\s+/);
+    const trimmedCommand = commandText.trim();
+    const parts = trimmedCommand.split(/\s+/);
     const commandName = parts[0].toLowerCase();
-    const args = parts.slice(1).join(' ');
+    const args = trimmedCommand.substring(parts[0].length).trimStart();
 
     if (Object.prototype.hasOwnProperty.call(commands, commandName)) {
         await commands[commandName].action(args);
@@ -270,7 +304,7 @@ async function handleInput(event) {
         const text = userInput.value.toLowerCase();
         if (!text || text.includes(' ')) return;
 
-        const matches = Object.keys(commands).filter(cmd => cmd.startsWith(text));
+        const matches = Object.keys(commands).filter(cmd => cmd.startsWith(text)).sort();
         if (matches.length === 1) {
             userInput.value = matches[0];
         } else if (matches.length > 1) {
@@ -287,7 +321,14 @@ async function handleInput(event) {
                     break;
                 }
             }
-            userInput.value = prefix;
+
+            if (prefix !== text) {
+                userInput.value = prefix;
+            } else {
+                // List matches if no further common prefix
+                printInstant(`> ${userInput.value}`, output, 'user-text');
+                printInstant(matches.join('  '), output, 'ai-text');
+            }
         }
     }
 }
@@ -319,6 +360,11 @@ window.onload = async () => {
     }
 
     userInput.disabled = true;
+    const savedTheme = localStorage.getItem('terminalTheme');
+    if (savedTheme) {
+        document.body.className = savedTheme === 'green' ? '' : `theme-${savedTheme}`;
+    }
+
     await printSlow("Initializing AI Experience...", output);
     await new Promise(resolve => setTimeout(resolve, 1000));
     await printSlow("Welcome. I am an AI simulation designed to interact with you.", output);
