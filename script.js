@@ -16,6 +16,7 @@ const responses = [
 
 let history = [];
 let historyIndex = -1;
+let currentInput = '';
 
 async function printSlow(text, element, className = 'ai-text') {
     const span = document.createElement('span');
@@ -31,23 +32,35 @@ async function printSlow(text, element, className = 'ai-text') {
     output.scrollTop = output.scrollHeight;
 }
 
+function printInstant(text, element, className = 'ai-text') {
+    const span = document.createElement('span');
+    span.className = className;
+    span.textContent = text;
+    element.appendChild(span);
+    element.appendChild(document.createElement('br'));
+    output.scrollTop = output.scrollHeight;
+}
+
 async function handleInput(event) {
     if (event.key === 'Enter') {
         const text = userInput.value.trim();
         if (!text) return;
 
         history.push(text);
+        localStorage.setItem('terminalHistory', JSON.stringify(history));
         historyIndex = -1;
 
         userInput.value = '';
         userInput.disabled = true;
 
-        await printSlow(`> ${text}`, output, 'user-text');
+        printInstant(`> ${text}`, output, 'user-text');
 
         const command = text.toLowerCase();
 
         if (command === 'exit' || command === 'quit') {
             await printSlow("AI: It was a pleasure interacting with you. Goodbye!", output);
+            userInput.disabled = false;
+            userInput.focus();
             return;
         } else if (command === 'clear') {
             output.innerHTML = '';
@@ -55,7 +68,22 @@ async function handleInput(event) {
             userInput.focus();
             return;
         } else if (command === 'help') {
-            await printSlow("Available commands: help, clear, exit, quit", output);
+            await printSlow("Available commands: help, clear, exit, quit, date, whoami, about", output);
+            userInput.disabled = false;
+            userInput.focus();
+            return;
+        } else if (command === 'date') {
+            await printSlow(`Current date and time: ${new Date().toLocaleString()}`, output);
+            userInput.disabled = false;
+            userInput.focus();
+            return;
+        } else if (command === 'whoami') {
+            await printSlow("User identity: Guest", output);
+            userInput.disabled = false;
+            userInput.focus();
+            return;
+        } else if (command === 'about') {
+            await printSlow("AI Experience: A web-based retro terminal simulation.", output);
             userInput.disabled = false;
             userInput.focus();
             return;
@@ -70,6 +98,7 @@ async function handleInput(event) {
     } else if (event.key === 'ArrowUp') {
         if (history.length > 0) {
             if (historyIndex === -1) {
+                currentInput = userInput.value;
                 historyIndex = history.length - 1;
             } else if (historyIndex > 0) {
                 historyIndex--;
@@ -84,7 +113,7 @@ async function handleInput(event) {
                 userInput.value = history[historyIndex];
             } else {
                 historyIndex = -1;
-                userInput.value = '';
+                userInput.value = currentInput;
             }
             event.preventDefault();
         }
@@ -98,6 +127,11 @@ window.addEventListener('click', () => {
 });
 
 window.onload = async () => {
+    const savedHistory = localStorage.getItem('terminalHistory');
+    if (savedHistory) {
+        history = JSON.parse(savedHistory);
+    }
+
     await printSlow("Initializing AI Experience...", output);
     await new Promise(resolve => setTimeout(resolve, 1000));
     await printSlow("Welcome. I am an AI simulation designed to interact with you.", output);
