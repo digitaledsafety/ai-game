@@ -7,7 +7,15 @@ const responses = [
     "Interesting perspective. I'll add that to my database.",
     "Could you elaborate on that?",
     "I see. Let's explore that further.",
+    "That's a fascinating way to look at it.",
+    "I'm processing that information. What's next?",
+    "System check: All systems functional. Please continue.",
+    "Interesting. My algorithms hadn't considered that.",
+    "Can you provide more context on that topic?",
 ];
+
+let history = [];
+let historyIndex = -1;
 
 async function printSlow(text, element, className = 'ai-text') {
     const span = document.createElement('span');
@@ -20,6 +28,7 @@ async function printSlow(text, element, className = 'ai-text') {
         output.scrollTop = output.scrollHeight;
     }
     element.appendChild(document.createElement('br'));
+    output.scrollTop = output.scrollHeight;
 }
 
 async function handleInput(event) {
@@ -27,13 +36,28 @@ async function handleInput(event) {
         const text = userInput.value.trim();
         if (!text) return;
 
+        history.push(text);
+        historyIndex = -1;
+
         userInput.value = '';
         userInput.disabled = true;
 
         await printSlow(`> ${text}`, output, 'user-text');
 
-        if (text.toLowerCase() === 'exit' || text.toLowerCase() === 'quit') {
+        const command = text.toLowerCase();
+
+        if (command === 'exit' || command === 'quit') {
             await printSlow("AI: It was a pleasure interacting with you. Goodbye!", output);
+            return;
+        } else if (command === 'clear') {
+            output.innerHTML = '';
+            userInput.disabled = false;
+            userInput.focus();
+            return;
+        } else if (command === 'help') {
+            await printSlow("Available commands: help, clear, exit, quit", output);
+            userInput.disabled = false;
+            userInput.focus();
             return;
         }
 
@@ -43,10 +67,35 @@ async function handleInput(event) {
 
         userInput.disabled = false;
         userInput.focus();
+    } else if (event.key === 'ArrowUp') {
+        if (history.length > 0) {
+            if (historyIndex === -1) {
+                historyIndex = history.length - 1;
+            } else if (historyIndex > 0) {
+                historyIndex--;
+            }
+            userInput.value = history[historyIndex];
+            event.preventDefault();
+        }
+    } else if (event.key === 'ArrowDown') {
+        if (historyIndex !== -1) {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                userInput.value = history[historyIndex];
+            } else {
+                historyIndex = -1;
+                userInput.value = '';
+            }
+            event.preventDefault();
+        }
     }
 }
 
 userInput.addEventListener('keydown', handleInput);
+
+window.addEventListener('click', () => {
+    userInput.focus();
+});
 
 window.onload = async () => {
     await printSlow("Initializing AI Experience...", output);
