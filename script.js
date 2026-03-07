@@ -41,13 +41,46 @@ function printInstant(text, element, className = 'ai-text') {
     output.scrollTop = output.scrollHeight;
 }
 
+async function executeCommand(command) {
+    if (command === 'exit' || command === 'quit') {
+        await printSlow("AI: It was a pleasure interacting with you. Goodbye!", output);
+        return;
+    } else if (command === 'clear') {
+        output.innerHTML = '';
+        return;
+    } else if (command === 'help') {
+        await printSlow("Available commands: help, clear, exit, quit, date, whoami, about", output);
+        return;
+    } else if (command === 'date') {
+        await printSlow(`Current date and time: ${new Date().toLocaleString()}`, output);
+        return;
+    } else if (command === 'whoami') {
+        await printSlow("User identity: Guest", output);
+        return;
+    } else if (command === 'about') {
+        await printSlow("AI Experience: A web-based retro terminal simulation.", output);
+        return;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+    await printSlow(`AI: ${randomResponse}`, output);
+}
+
 async function handleInput(event) {
     if (event.key === 'Enter') {
         const text = userInput.value.trim();
-        if (!text) return;
 
-        history.push(text);
-        localStorage.setItem('terminalHistory', JSON.stringify(history));
+        if (!text) {
+            printInstant('>', output, 'user-text');
+            userInput.value = '';
+            return;
+        }
+
+        if (history.length === 0 || history[history.length - 1] !== text) {
+            history.push(text);
+            localStorage.setItem('terminalHistory', JSON.stringify(history));
+        }
         historyIndex = -1;
 
         userInput.value = '';
@@ -55,46 +88,15 @@ async function handleInput(event) {
 
         printInstant(`> ${text}`, output, 'user-text');
 
-        const command = text.toLowerCase();
-
-        if (command === 'exit' || command === 'quit') {
-            await printSlow("AI: It was a pleasure interacting with you. Goodbye!", output);
+        try {
+            await executeCommand(text.toLowerCase());
+        } catch (error) {
+            console.error('Error executing command:', error);
+            await printSlow("AI: An error occurred while processing your request.", output);
+        } finally {
             userInput.disabled = false;
             userInput.focus();
-            return;
-        } else if (command === 'clear') {
-            output.innerHTML = '';
-            userInput.disabled = false;
-            userInput.focus();
-            return;
-        } else if (command === 'help') {
-            await printSlow("Available commands: help, clear, exit, quit, date, whoami, about", output);
-            userInput.disabled = false;
-            userInput.focus();
-            return;
-        } else if (command === 'date') {
-            await printSlow(`Current date and time: ${new Date().toLocaleString()}`, output);
-            userInput.disabled = false;
-            userInput.focus();
-            return;
-        } else if (command === 'whoami') {
-            await printSlow("User identity: Guest", output);
-            userInput.disabled = false;
-            userInput.focus();
-            return;
-        } else if (command === 'about') {
-            await printSlow("AI Experience: A web-based retro terminal simulation.", output);
-            userInput.disabled = false;
-            userInput.focus();
-            return;
         }
-
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-        await printSlow(`AI: ${randomResponse}`, output);
-
-        userInput.disabled = false;
-        userInput.focus();
     } else if (event.key === 'ArrowUp') {
         if (history.length > 0) {
             if (historyIndex === -1) {
@@ -132,8 +134,10 @@ window.onload = async () => {
         history = JSON.parse(savedHistory);
     }
 
+    userInput.disabled = true;
     await printSlow("Initializing AI Experience...", output);
     await new Promise(resolve => setTimeout(resolve, 1000));
     await printSlow("Welcome. I am an AI simulation designed to interact with you.", output);
+    userInput.disabled = false;
     userInput.focus();
 };
