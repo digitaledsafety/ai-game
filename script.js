@@ -164,6 +164,27 @@ const commands = {
             await printSlow(`AI: ${fileList}`, output);
         }
     },
+    man: {
+        usage: "man [command]",
+        description: "Display the manual for a command",
+        action: async (args) => {
+            if (!args) {
+                await printSlow("AI: Usage: man [command]", output);
+                return;
+            }
+            const commandName = args.toLowerCase();
+            if (Object.prototype.hasOwnProperty.call(commands, commandName)) {
+                const cmd = commands[commandName];
+                await printSlow(`AI: Manual for ${commandName}:`, output);
+                printInstant(`  - Description: ${cmd.description}`, output);
+                if (cmd.usage) {
+                    printInstant(`  - Usage: ${cmd.usage}`, output);
+                }
+            } else {
+                await printSlow(`AI: No manual entry for: ${commandName}`, output);
+            }
+        }
+    },
     cat: {
         usage: "cat [filename]",
         description: "Display file content",
@@ -247,6 +268,12 @@ async function executeCommand(commandText) {
 }
 
 async function handleInput(event) {
+    if (event.ctrlKey && event.key.toLowerCase() === 'l') {
+        event.preventDefault();
+        commands.clear.action();
+        return;
+    }
+
     if (event.key === 'Enter') {
         const text = userInput.value.trim();
 
@@ -302,28 +329,49 @@ async function handleInput(event) {
     } else if (event.key === 'Tab') {
         event.preventDefault();
         const text = userInput.value.toLowerCase();
-        if (!text || text.includes(' ')) return;
+        if (!text) return;
 
-        const matches = Object.keys(commands).filter(cmd => cmd.startsWith(text)).sort();
+        let matches = [];
+        let prefix = '';
+        let searchStr = '';
+
+        if (!text.includes(' ')) {
+            matches = Object.keys(commands).filter(cmd => cmd.startsWith(text)).sort();
+            searchStr = text;
+        } else {
+            const parts = text.split(/\s+/);
+            if (parts.length === 2) {
+                const cmd = parts[0];
+                searchStr = parts[1];
+                if (cmd === 'cat') {
+                    matches = Object.keys(files).filter(f => f.toLowerCase().startsWith(searchStr)).sort();
+                    prefix = 'cat ';
+                } else if (cmd === 'man') {
+                    matches = Object.keys(commands).filter(c => c.startsWith(searchStr)).sort();
+                    prefix = 'man ';
+                }
+            }
+        }
+
         if (matches.length === 1) {
-            userInput.value = matches[0];
+            userInput.value = prefix + matches[0];
         } else if (matches.length > 1) {
             // Find longest common prefix
-            let i = text.length;
-            let prefix = text;
+            let i = searchStr.length;
+            let common = searchStr;
             while (true) {
                 let nextChar = matches[0][i];
                 if (!nextChar) break;
                 if (matches.every(m => m[i] === nextChar)) {
-                    prefix += nextChar;
+                    common += nextChar;
                     i++;
                 } else {
                     break;
                 }
             }
 
-            if (prefix !== text) {
-                userInput.value = prefix;
+            if (common !== searchStr) {
+                userInput.value = prefix + common;
             } else {
                 // List matches if no further common prefix
                 printInstant(`> ${userInput.value}`, output, 'user-text');
