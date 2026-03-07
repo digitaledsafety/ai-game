@@ -63,11 +63,17 @@ const commands = {
         action: async () => {
             await printSlow("AI: Available Commands:", output);
             const sortedCommandNames = Object.keys(commands).sort();
+            const maxLen = Math.max(...sortedCommandNames.map(n => {
+                const cmd = commands[n];
+                return (n === 'exit' ? 'exit/quit' : (cmd.usage || n)).length;
+            }));
+
             for (const name of sortedCommandNames) {
                 if (name === 'quit') continue;
                 const cmd = commands[name];
                 const displayName = name === 'exit' ? 'exit/quit' : (cmd.usage || name);
-                printInstant(`  - ${displayName}: ${cmd.description}`, output);
+                const padding = " ".repeat(maxLen - displayName.length);
+                printInstant(`  - ${displayName}${padding} : ${cmd.description}`, output);
             }
         }
     },
@@ -169,7 +175,7 @@ const commands = {
         usage: "cd [directory]",
         description: "Change directory",
         action: async (args) => {
-            if (!args || args.length === 0 || args[0] === "/" || args[0] === ".") {
+            if (!args || args.length === 0 || args[0] === "/" || args[0] === "." || args[0] === "..") {
                 // Stay in root
                 return;
             }
@@ -181,9 +187,7 @@ const commands = {
         action: async () => {
             await printSlow("AI: Current directory files:", output);
             const sortedFiles = Object.keys(files).sort();
-            for (const file of sortedFiles) {
-                printInstant(`  - ${file}`, output);
-            }
+            printInstant(`  ${sortedFiles.join('  ')}`, output);
         }
     },
     man: {
@@ -235,6 +239,18 @@ const commands = {
         description: "Clear the terminal screen",
         action: async () => {
             output.innerHTML = '';
+        }
+    },
+    cls: {
+        description: "Alias for clear",
+        action: async () => {
+            await commands.clear.action();
+        }
+    },
+    version: {
+        description: "Show system version",
+        action: async () => {
+            await printSlow("AI: AI Experience OS v1.0.4", output);
         }
     },
     reboot: {
