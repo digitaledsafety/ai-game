@@ -1,6 +1,29 @@
+:root {
+    --primary-color: #00ff41;
+    --primary-glow: rgba(0, 255, 65, 0.5);
+    --bg-color: #0c0c0c;
+    --terminal-bg: #1a1a1a;
+    --user-text-color: #fff;
+}
+
+body.theme-amber {
+    --primary-color: #ffb000;
+    --primary-glow: rgba(255, 176, 0, 0.5);
+}
+
+body.theme-blue {
+    --primary-color: #00d0ff;
+    --primary-glow: rgba(0, 208, 255, 0.5);
+}
+
+body.theme-classic {
+    --primary-color: #00ff41;
+    --primary-glow: rgba(0, 255, 65, 0.5);
+}
+
 body {
-    background-color: #0c0c0c;
-    color: #00ff41;
+    background-color: var(--bg-color);
+    color: var(--primary-color);
     font-family: 'Courier New', Courier, monospace;
     display: flex;
     justify-content: center;
@@ -8,20 +31,22 @@ body {
     height: 100vh;
     margin: 0;
     overflow: hidden;
+    transition: color 0.3s ease;
 }
 
 #terminal {
     width: 80%;
     height: 80%;
-    background-color: #1a1a1a;
+    background-color: var(--terminal-bg);
     padding: 20px;
     border: 2px solid #333;
     border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+    box-shadow: 0 0 20px var(--primary-glow);
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    transition: box-shadow 0.3s ease;
 }
 
 #terminal::before {
@@ -61,12 +86,13 @@ body {
 #user-input {
     background-color: transparent;
     border: none;
-    color: #00ff41;
+    color: var(--primary-color);
     font-family: inherit;
     font-size: inherit;
     outline: none;
     flex-grow: 1;
-    caret-color: #00ff41;
+    caret-color: var(--primary-color);
+    transition: color 0.3s ease, caret-color 0.3s ease;
 }
 
 #user-input:focus {
@@ -74,7 +100,7 @@ body {
 }
 
 @keyframes cursor-blink {
-    from, to { caret-color: #00ff41; }
+    from, to { caret-color: var(--primary-color); }
     50% { caret-color: transparent; }
 }
 
@@ -84,16 +110,17 @@ body {
 }
 
 .ai-text {
-    color: #00ff41;
-    text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-glow);
+    transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .prompt, #user-input {
-    text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+    text-shadow: 0 0 5px var(--primary-glow);
 }
 
 .user-text {
-    color: #fff;
+    color: var(--user-text-color);
     font-weight: bold;
 }
 
