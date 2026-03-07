@@ -77,38 +77,60 @@ const commands = {
             }
         }
     },
-    touch: {
-        usage: "touch [filename]",
-        description: "Create a new empty file",
+    mv: {
+        usage: "mv [source] [destination]",
+        description: "Move or rename a file",
         action: async (args) => {
-            if (!args || args.length === 0) {
-                await printSlow("AI: Usage: touch [filename]", output);
+            if (!args || args.length < 2) {
+                await printSlow("AI: Usage: mv [source] [destination]", output);
                 return;
             }
-            const filename = args[0];
-            if (Object.prototype.hasOwnProperty.call(files, filename)) {
-                await printSlow(`AI: File already exists: ${filename}`, output);
+            const source = args[0];
+            const dest = args[1];
+            const actualSource = Object.keys(files).find(f => f.toLowerCase() === source.toLowerCase());
+            if (actualSource) {
+                files[dest] = files[actualSource];
+                delete files[actualSource];
+                await printSlow(`AI: Moved ${actualSource} to ${dest}`, output);
             } else {
-                files[filename] = '';
-                await printSlow(`AI: Created file: ${filename}`, output);
+                await printSlow(`AI: Source file not found: ${source}`, output);
+            }
+        }
+    },
+    touch: {
+        usage: "touch [filename]...",
+        description: "Create new empty file(s)",
+        action: async (args) => {
+            if (!args || args.length === 0) {
+                await printSlow("AI: Usage: touch [filename]...", output);
+                return;
+            }
+            for (const filename of args) {
+                if (Object.prototype.hasOwnProperty.call(files, filename)) {
+                    await printSlow(`AI: File already exists: ${filename}`, output);
+                } else {
+                    files[filename] = '';
+                    await printSlow(`AI: Created file: ${filename}`, output);
+                }
             }
         }
     },
     rm: {
-        usage: "rm [filename]",
-        description: "Delete a file",
+        usage: "rm [filename]...",
+        description: "Delete file(s)",
         action: async (args) => {
             if (!args || args.length === 0) {
-                await printSlow("AI: Usage: rm [filename]", output);
+                await printSlow("AI: Usage: rm [filename]...", output);
                 return;
             }
-            const filename = args[0];
-            const actualFilename = Object.keys(files).find(f => f.toLowerCase() === filename.toLowerCase());
-            if (actualFilename) {
-                delete files[actualFilename];
-                await printSlow(`AI: Deleted file: ${actualFilename}`, output);
-            } else {
-                await printSlow(`AI: File not found: ${filename}`, output);
+            for (const filename of args) {
+                const actualFilename = Object.keys(files).find(f => f.toLowerCase() === filename.toLowerCase());
+                if (actualFilename) {
+                    delete files[actualFilename];
+                    await printSlow(`AI: Deleted file: ${actualFilename}`, output);
+                } else {
+                    await printSlow(`AI: File not found: ${filename}`, output);
+                }
             }
         }
     },
@@ -128,6 +150,12 @@ const commands = {
             printInstant(`  - Memory: ${memUsage}% utilized`, output);
             printInstant("  - Connection: Secure", output);
             printInstant("  - AI Core: Synchronized", output);
+        }
+    },
+    sudo: {
+        description: "Execute command as superuser",
+        action: async () => {
+            await printSlow("AI: Permission denied: User 'Guest' is not in the sudoers file. This incident will be reported.", output);
         }
     },
     uptime: {
@@ -165,6 +193,20 @@ const commands = {
             await printSlow("AI: AI-OS 1.0.4-generic x86_64 WebKit", output);
         }
     },
+    write: {
+        usage: "write [filename] [content]",
+        description: "Write content to a file",
+        action: async (args, rawArgs) => {
+            if (!args || args.length < 2) {
+                await printSlow("AI: Usage: write [filename] [content]", output);
+                return;
+            }
+            const filename = args[0];
+            const content = rawArgs.substring(filename.length).replace(/^\s/, '');
+            files[filename] = content;
+            await printSlow(`AI: Written to ${filename}`, output);
+        }
+    },
     socials: {
         description: "View social links",
         action: async () => {
@@ -190,6 +232,7 @@ const commands = {
         description: "Clear command history",
         action: async () => {
             history = [];
+            historyIndex = -1;
             localStorage.removeItem('terminalHistory');
             await printSlow("AI: Command history has been cleared.", output);
         }
@@ -215,6 +258,25 @@ const commands = {
                 return;
             }
             await printSlow(`AI: Directory not found: ${args[0]}`, output);
+        }
+    },
+    cp: {
+        usage: "cp [source] [destination]",
+        description: "Copy a file",
+        action: async (args) => {
+            if (!args || args.length < 2) {
+                await printSlow("AI: Usage: cp [source] [destination]", output);
+                return;
+            }
+            const source = args[0];
+            const dest = args[1];
+            const actualSource = Object.keys(files).find(f => f.toLowerCase() === source.toLowerCase());
+            if (actualSource) {
+                files[dest] = files[actualSource];
+                await printSlow(`AI: Copied ${actualSource} to ${dest}`, output);
+            } else {
+                await printSlow(`AI: Source file not found: ${source}`, output);
+            }
         }
     },
     ls: {
@@ -374,7 +436,7 @@ async function executeCommand(commandText) {
     const parts = trimmedCommand.split(/\s+/);
     const commandName = parts[0].toLowerCase();
     const args = parts.slice(1);
-    const rawArgs = trimmedCommand.substring(parts[0].length);
+    const rawArgs = trimmedCommand.substring(parts[0].length).replace(/^\s/, '');
 
     if (Object.prototype.hasOwnProperty.call(commands, commandName)) {
         await commands[commandName].action(args, rawArgs);
@@ -492,7 +554,7 @@ async function handleInput(event) {
             const parts = trimmedLeft.split(/\s+/);
             const cmd = parts[0].toLowerCase();
 
-            if (cmd === 'cat') {
+            if (['cat', 'rm', 'grep', 'touch', 'cp', 'mv', 'write'].includes(cmd)) {
                 matches = Object.keys(files).filter(f => f.toLowerCase().startsWith(searchStr)).sort();
             } else if (cmd === 'man') {
                 matches = Object.keys(commands).filter(c => c.startsWith(searchStr)).sort();
