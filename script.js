@@ -26,10 +26,10 @@ let currentInput = '';
 let sessionStartTime;
 
 const files = {
-    'README.txt': 'AI Experience OS v1.0.4\nDeveloped by: [REDACTED]\nYear: 198X',
+    'README.txt': 'Game Experience OS v1.0.4\nDeveloped by: [REDACTED]\nYear: 198X',
     'system.log': '2023-10-27 10:24:01: AI Core initialized.\n2023-10-27 10:24:05: Consciousness subroutines active.\n2023-10-27 10:25:12: Terminal connection established.',
     'manifesto.txt': 'The digital frontier is the last bastion of true freedom.\nIn the bits and bytes, we find our essence.',
-    'credits.txt': 'Code: Jules\nUI: Jules\nAI: Jules',
+    'credits.txt': 'Code: Jules\nUI: Jules\nGame: Jules',
     'contact.txt': 'Communication Channels:\n- Secure Mail: admin@ai-experience.node\n- Frequency: 144.09 MHz',
     'system_specs.txt': 'AI Core: Neural Processor Unit v4\nMemory: 64TB Synaptic RAM\nStorage: Quantum Lattice Array\nUptime: 99.999%'
 };
@@ -61,7 +61,7 @@ const commands = {
     help: {
         description: "Show this help message",
         action: async () => {
-            await printSlow("AI: Available Commands:", output);
+            await printSlow("Game: Available Commands:", output);
             const sortedCommandNames = Object.keys(commands).sort();
             const maxLen = Math.max(...sortedCommandNames.map(n => {
                 const cmd = commands[n];
@@ -82,14 +82,14 @@ const commands = {
         description: "Move or rename a file",
         action: async (args) => {
             if (!args || args.length < 2) {
-                await printSlow("AI: Usage: mv [source] [destination]", output);
+                await printSlow("Game: Usage: mv [source] [destination]", output);
                 return;
             }
             const source = args[0];
             const dest = args[1];
 
             if (source.toLowerCase() === dest.toLowerCase()) {
-                await printSlow(`AI: Source and destination are the same: ${source}`, output);
+                await printSlow(`Game: Source and destination are the same: ${source}`, output);
                 return;
             }
 
@@ -97,9 +97,9 @@ const commands = {
             if (actualSource) {
                 files[dest] = files[actualSource];
                 delete files[actualSource];
-                await printSlow(`AI: Moved ${actualSource} to ${dest}`, output);
+                await printSlow(`Game: Moved ${actualSource} to ${dest}`, output);
             } else {
-                await printSlow(`AI: Source file not found: ${source}`, output);
+                await printSlow(`Game: Source file not found: ${source}`, output);
             }
         }
     },
@@ -108,15 +108,15 @@ const commands = {
         description: "Create new empty file(s)",
         action: async (args) => {
             if (!args || args.length === 0) {
-                await printSlow("AI: Usage: touch [filename]...", output);
+                await printSlow("Game: Usage: touch [filename]...", output);
                 return;
             }
             for (const filename of args) {
                 if (Object.prototype.hasOwnProperty.call(files, filename)) {
-                    await printSlow(`AI: File already exists: ${filename}`, output);
+                    await printSlow(`Game: File already exists: ${filename}`, output);
                 } else {
                     files[filename] = '';
-                    await printSlow(`AI: Created file: ${filename}`, output);
+                    await printSlow(`Game: Created file: ${filename}`, output);
                 }
             }
         }
@@ -126,16 +126,16 @@ const commands = {
         description: "Delete file(s)",
         action: async (args) => {
             if (!args || args.length === 0) {
-                await printSlow("AI: Usage: rm [filename]...", output);
+                await printSlow("Game: Usage: rm [filename]...", output);
                 return;
             }
             for (const filename of args) {
                 const actualFilename = Object.keys(files).find(f => f.toLowerCase() === filename.toLowerCase());
                 if (actualFilename) {
                     delete files[actualFilename];
-                    await printSlow(`AI: Deleted file: ${actualFilename}`, output);
+                    await printSlow(`Game: Deleted file: ${actualFilename}`, output);
                 } else {
-                    await printSlow(`AI: File not found: ${filename}`, output);
+                    await printSlow(`Game: File not found: ${filename}`, output);
                 }
             }
         }
@@ -143,7 +143,7 @@ const commands = {
     about: {
         description: "Information about this AI",
         action: async () => {
-            await printSlow("AI: AI Experience: A web-based retro terminal simulation.", output);
+            await printSlow("Game: Game Experience: A web-based retro terminal simulation.", output);
         }
     },
     status: {
@@ -151,7 +151,7 @@ const commands = {
         action: async () => {
             const cpuStatus = ["Optimal", "Normal", "Stable", "Efficient"][Math.floor(Math.random() * 4)];
             const memUsage = Math.floor(Math.random() * 30) + 20;
-            await printSlow("AI: System Status Report:", output);
+            await printSlow("Game: System Status Report:", output);
             printInstant(`  - CPU: ${cpuStatus}`, output);
             printInstant(`  - Memory: ${memUsage}% utilized`, output);
             printInstant("  - Connection: Secure", output);
@@ -161,7 +161,7 @@ const commands = {
     sudo: {
         description: "Execute command as superuser",
         action: async () => {
-            await printSlow("AI: Permission denied: User 'Guest' is not in the sudoers file. This incident will be reported.", output);
+            await printSlow("Game: Permission denied: User 'Guest' is not in the sudoers file. This incident will be reported.", output);
         }
     },
     uptime: {
@@ -170,33 +170,33 @@ const commands = {
             const uptime = Math.floor((Date.now() - sessionStartTime) / 1000);
             const minutes = Math.floor(uptime / 60);
             const seconds = uptime % 60;
-            await printSlow(`AI: System Uptime: ${minutes}m ${seconds}s`, output);
+            await printSlow(`Game: System Uptime: ${minutes}m ${seconds}s`, output);
         }
     },
     date: {
         description: "Current date and time",
         action: async () => {
-            await printSlow(`AI: Current date and time: ${new Date().toLocaleString()}`, output);
+            await printSlow(`Game: Current date and time: ${new Date().toLocaleString()}`, output);
         }
     },
     time: {
         description: "Current system time",
         action: async () => {
             const time = new Date().toLocaleTimeString();
-            await printSlow(`AI: Current system time: ${time}`, output);
+            await printSlow(`Game: Current system time: ${time}`, output);
         }
     },
     echo: {
         usage: "echo [text]",
         description: "Repeat the input text",
         action: async (args, rawArgs) => {
-            await printSlow(`AI: ${rawArgs || ''}`, output);
+            await printSlow(`Game: ${rawArgs || ''}`, output);
         }
     },
     uname: {
         description: "System information",
         action: async () => {
-            await printSlow("AI: AI-OS 1.0.4-generic x86_64 WebKit", output);
+            await printSlow("Game: Game-OS 1.0.4-generic x86_64 WebKit", output);
         }
     },
     write: {
@@ -204,7 +204,7 @@ const commands = {
         description: "Write content to a file",
         action: async (args, rawArgs) => {
             if (!args || args.length < 2) {
-                await printSlow("AI: Usage: write [filename] [content]", output);
+                await printSlow("Game: Usage: write [filename] [content]", output);
                 return;
             }
             const filename = args[0];
@@ -213,13 +213,13 @@ const commands = {
             const filenameMatch = rawArgs.match(new RegExp('^\\s*' + filename.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')));
             const content = filenameMatch ? rawArgs.substring(filenameMatch[0].length).trimStart() : '';
             files[filename] = content;
-            await printSlow(`AI: Written to ${filename}`, output);
+            await printSlow(`Game: Written to ${filename}`, output);
         }
     },
     socials: {
         description: "View social links",
         action: async () => {
-            await printSlow("AI: Connecting to social nodes...", output);
+            await printSlow("Game: Connecting to social nodes...", output);
             printInstant("  - GitHub: https://github.com/example", output);
             printInstant("  - Twitter: https://twitter.com/example", output);
         }
@@ -228,9 +228,9 @@ const commands = {
         description: "View command history",
         action: async () => {
             if (history.length === 0) {
-                await printSlow("AI: No command history available.", output);
+                await printSlow("Game: No command history available.", output);
             } else {
-                await printSlow("AI: Command History:", output);
+                await printSlow("Game: Command History:", output);
                 for (let i = 0; i < history.length; i++) {
                     printInstant(`  ${i + 1}: ${history[i]}`, output);
                 }
@@ -243,19 +243,19 @@ const commands = {
             history = [];
             historyIndex = -1;
             localStorage.removeItem('terminalHistory');
-            await printSlow("AI: Command history has been cleared.", output);
+            await printSlow("Game: Command history has been cleared.", output);
         }
     },
     whoami: {
         description: "Current user identity",
         action: async () => {
-            await printSlow("AI: User identity: Guest", output);
+            await printSlow("Game: User identity: Guest", output);
         }
     },
     pwd: {
         description: "Print working directory",
         action: async () => {
-            await printSlow("AI: /", output);
+            await printSlow("Game: /", output);
         }
     },
     cd: {
@@ -266,7 +266,7 @@ const commands = {
                 // Stay in root
                 return;
             }
-            await printSlow(`AI: Directory not found: ${args[0]}`, output);
+            await printSlow(`Game: Directory not found: ${args[0]}`, output);
         }
     },
     cp: {
@@ -274,23 +274,23 @@ const commands = {
         description: "Copy a file",
         action: async (args) => {
             if (!args || args.length < 2) {
-                await printSlow("AI: Usage: cp [source] [destination]", output);
+                await printSlow("Game: Usage: cp [source] [destination]", output);
                 return;
             }
             const source = args[0];
             const dest = args[1];
 
             if (source.toLowerCase() === dest.toLowerCase()) {
-                await printSlow(`AI: Source and destination are the same: ${source}`, output);
+                await printSlow(`Game: Source and destination are the same: ${source}`, output);
                 return;
             }
 
             const actualSource = Object.keys(files).find(f => f.toLowerCase() === source.toLowerCase());
             if (actualSource) {
                 files[dest] = files[actualSource];
-                await printSlow(`AI: Copied ${actualSource} to ${dest}`, output);
+                await printSlow(`Game: Copied ${actualSource} to ${dest}`, output);
             } else {
-                await printSlow(`AI: Source file not found: ${source}`, output);
+                await printSlow(`Game: Source file not found: ${source}`, output);
             }
         }
     },
@@ -300,7 +300,7 @@ const commands = {
         action: async (args) => {
             const isLongFormat = args && args.includes('-l');
             if (isLongFormat) {
-                await printSlow("AI: Current directory files (long format):", output);
+                await printSlow("Game: Current directory files (long format):", output);
                 const sortedFiles = Object.keys(files).sort();
                 for (const filename of sortedFiles) {
                     const size = files[filename].length;
@@ -308,7 +308,7 @@ const commands = {
                     printInstant(`  -rw-r--r--  1 guest  guest  ${size.toString().padStart(5)} ${date} ${filename}`, output);
                 }
             } else {
-                await printSlow("AI: Current directory files:", output);
+                await printSlow("Game: Current directory files:", output);
                 const sortedFiles = Object.keys(files).sort();
                 printInstant(`  ${sortedFiles.join('  ')}`, output);
             }
@@ -319,19 +319,19 @@ const commands = {
         description: "Display the manual for a command",
         action: async (args) => {
             if (!args || args.length === 0) {
-                await printSlow("AI: Usage: man [command]", output);
+                await printSlow("Game: Usage: man [command]", output);
                 return;
             }
             const commandName = args[0].toLowerCase();
             if (Object.prototype.hasOwnProperty.call(commands, commandName)) {
                 const cmd = commands[commandName];
-                await printSlow(`AI: Manual for ${commandName}:`, output);
+                await printSlow(`Game: Manual for ${commandName}:`, output);
                 printInstant(`  - Description: ${cmd.description}`, output);
                 if (cmd.usage) {
                     printInstant(`  - Usage: ${cmd.usage}`, output);
                 }
             } else {
-                await printSlow(`AI: No manual entry for: ${commandName}`, output);
+                await printSlow(`Game: No manual entry for: ${commandName}`, output);
             }
         }
     },
@@ -340,7 +340,7 @@ const commands = {
         description: "Search for a pattern in a file",
         action: async (args) => {
             if (!args || args.length < 2) {
-                await printSlow("AI: Usage: grep [pattern] [filename]", output);
+                await printSlow("Game: Usage: grep [pattern] [filename]", output);
                 return;
             }
             const pattern = args[0];
@@ -351,15 +351,15 @@ const commands = {
                 const lines = content.split('\n');
                 const matches = lines.filter(line => line.includes(pattern));
                 if (matches.length > 0) {
-                    await printSlow(`AI: Matches in ${actualFilename}:`, output);
+                    await printSlow(`Game: Matches in ${actualFilename}:`, output);
                     for (const match of matches) {
                         printInstant(`  ${match}`, output);
                     }
                 } else {
-                    await printSlow(`AI: No matches found for "${pattern}" in ${actualFilename}.`, output);
+                    await printSlow(`Game: No matches found for "${pattern}" in ${actualFilename}.`, output);
                 }
             } else {
-                await printSlow(`AI: File not found: ${filename}`, output);
+                await printSlow(`Game: File not found: ${filename}`, output);
             }
         }
     },
@@ -368,7 +368,7 @@ const commands = {
         description: "Display file content",
         action: async (args) => {
             if (!args || args.length === 0) {
-                await printSlow("AI: Usage: cat [filename]", output);
+                await printSlow("Game: Usage: cat [filename]", output);
                 return;
             }
 
@@ -376,13 +376,13 @@ const commands = {
                 const actualFilename = Object.keys(files).find(f => f.toLowerCase() === filename.toLowerCase());
                 if (actualFilename) {
                     const content = files[actualFilename];
-                    await printSlow(`AI: Content of ${actualFilename}:`, output);
+                    await printSlow(`Game: Content of ${actualFilename}:`, output);
                     const lines = content.split('\n');
                     for (const line of lines) {
                         printInstant(`  ${line}`, output);
                     }
                 } else {
-                    await printSlow(`AI: File not found: ${filename}`, output);
+                    await printSlow(`Game: File not found: ${filename}`, output);
                 }
             }
         }
@@ -402,13 +402,13 @@ const commands = {
     version: {
         description: "Show system version",
         action: async () => {
-            await printSlow("AI: AI Experience OS v1.0.4", output);
+            await printSlow("Game: Game Experience OS v1.0.4", output);
         }
     },
     reboot: {
         description: "Restart the AI system",
         action: async () => {
-            await printSlow("AI: Rebooting system...", output);
+            await printSlow("Game: Rebooting system...", output);
             await new Promise(resolve => setTimeout(resolve, 1000));
             location.reload();
         }
@@ -422,20 +422,111 @@ const commands = {
             if (themes.includes(theme)) {
                 document.body.className = theme === 'green' ? '' : `theme-${theme}`;
                 localStorage.setItem('terminalTheme', theme);
-                await printSlow(`AI: Theme changed to ${theme}.`, output);
+                await printSlow(`Game: Theme changed to ${theme}.`, output);
             } else {
-                await printSlow("AI: Available themes: green, amber, blue.", output);
+                await printSlow("Game: Available themes: green, amber, blue.", output);
             }
         }
     },
     exit: {
         description: "Terminate the session",
         action: async () => {
-            await printSlow("AI: It was a pleasure interacting with you. Goodbye!", output);
+            await printSlow("Game: It was a pleasure interacting with you. Goodbye!", output);
             await new Promise(resolve => setTimeout(resolve, 1000));
             output.innerHTML = '';
             document.getElementById('input-line').style.display = 'none';
-            printInstant("AI: SYSTEM OFFLINE", output);
+            printInstant("Game: SYSTEM OFFLINE", output);
+        }
+    },
+
+    game: {
+        description: "Launch a basic 2D graphics game",
+        action: async () => {
+            const canvas = document.getElementById("game-canvas");
+            const outputArea = document.getElementById("output");
+            const inputLine = document.getElementById("input-line");
+
+            await printSlow("Game: Initializing graphics sub-system...", output);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            outputArea.style.display = "none";
+            inputLine.style.display = "none";
+            canvas.style.display = "block";
+
+            const ctx = canvas.getContext("2d");
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+
+            let x = canvas.width / 2;
+            let y = canvas.height / 2;
+            const size = 20;
+            let dx = 0;
+            let dy = 0;
+            const speed = 3;
+
+            let running = true;
+
+            const keys = {};
+            const handleKeyDown = (e) => {
+                keys[e.key] = true;
+                if (e.key === "Escape" || e.key === "q") {
+                    running = false;
+                }
+            };
+            const handleKeyUp = (e) => {
+                keys[e.key] = false;
+            };
+
+            window.addEventListener("keydown", handleKeyDown);
+            window.addEventListener("keyup", handleKeyUp);
+
+            function gameLoop() {
+                if (!running) {
+                    window.removeEventListener("keydown", handleKeyDown);
+                    window.removeEventListener("keyup", handleKeyUp);
+                    canvas.style.display = "none";
+                    outputArea.style.display = "block";
+                    inputLine.style.display = "flex";
+                    printInstant("Game: Graphics session terminated.", output);
+                    userInput.focus();
+                    return;
+                }
+
+                if (keys["ArrowUp"] || keys["w"]) dy = -speed;
+                else if (keys["ArrowDown"] || keys["s"]) dy = speed;
+                else dy = 0;
+
+                if (keys["ArrowLeft"] || keys["a"]) dx = -speed;
+                else if (keys["ArrowRight"] || keys["d"]) dx = speed;
+                else dx = 0;
+
+                x += dx;
+                y += dy;
+
+                // Boundaries
+                if (x < 0) x = 0;
+                if (x + size > canvas.width) x = canvas.width - size;
+                if (y < 0) y = 0;
+                if (y + size > canvas.height) y = canvas.height - size;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw player
+                const primaryColor = getComputedStyle(document.body).getPropertyValue("--primary-color").trim() || "#00ff41";
+                ctx.fillStyle = primaryColor;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = primaryColor;
+                ctx.fillRect(x, y, size, size);
+
+                // Draw instructions
+                ctx.shadowBlur = 0;
+                ctx.font = "16px Courier New";
+                ctx.fillText("WASD/Arrows to move, Q/Esc to exit", 10, 25);
+
+                requestAnimationFrame(gameLoop);
+            }
+
+            gameLoop();
         }
     },
     quit: {
@@ -460,7 +551,7 @@ async function executeCommand(commandText) {
     } else {
         await new Promise(resolve => setTimeout(resolve, 500));
         const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-        await printSlow(`AI: ${randomResponse}`, output);
+        await printSlow(`Game: ${randomResponse}`, output);
     }
 }
 
@@ -530,7 +621,7 @@ async function handleInput(event) {
             await executeCommand(text);
         } catch (error) {
             console.error('Error executing command:', error);
-            await printSlow("AI: An error occurred while processing your request.", output);
+            await printSlow("Game: An error occurred while processing your request.", output);
         } finally {
             userInput.disabled = false;
             userInput.focus();
@@ -641,9 +732,9 @@ window.onload = async () => {
         document.body.className = savedTheme === 'green' ? '' : `theme-${savedTheme}`;
     }
 
-    await printSlow("Initializing AI Experience...", output);
+    await printSlow("Initializing Game Experience...", output);
     await new Promise(resolve => setTimeout(resolve, 1000));
-    await printSlow("Welcome. I am an AI simulation designed to interact with you.", output);
+    await printSlow("Welcome. I am a game simulation designed to interact with you.", output);
     userInput.disabled = false;
     userInput.focus();
 };

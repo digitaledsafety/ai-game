@@ -1,16 +1,17 @@
-# AI Experience
+# Game Experience
 
-A web-based interactive AI experience.
+A web-based interactive terminal and game experience.
 
 ## Features
 
-- **Interactive Terminal UI**: Engage with a simulated AI in a retro-style terminal.
-- **Typing Simulation**: Realistic AI typing effect.
+- **Interactive Terminal UI**: Engage with a simulated system in a retro-style terminal.
+- **2D Graphics Game**: Launch a basic 2D game directly from the terminal.
+- **Typing Simulation**: Realistic typing effects for an immersive experience.
 - **Lightweight**: Built with vanilla HTML, CSS, and JavaScript.
 
 ## Getting Started
 
-Simply open `index.html` in your browser to start the experience.
+Simply open `index.html` in your browser to start the experience. Type `game` in the terminal to launch the graphics mode.
 
 ## GitHub Pages
 
