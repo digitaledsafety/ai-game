@@ -41,7 +41,7 @@ def run_test():
         user_input.fill("echo   triple   space")
         user_input.press("Enter")
         time.sleep(2)
-        if "Game:   triple   space" in output.inner_text():
+        if "AI:   triple   space" in output.inner_text():
             print("SUCCESS: echo spacing preserved correctly")
         else:
             print(f"FAILURE: echo spacing incorrect. Output: {output.inner_text()}")
@@ -107,14 +107,14 @@ def run_test():
         clear_terminal()
 
         # Test write
-        user_input.fill("write newfile.txt Game Started")
+        user_input.fill("write newfile.txt Hello World")
         user_input.press("Enter")
         time.sleep(2)
         clear_terminal()
         user_input.fill("cat newfile.txt")
         user_input.press("Enter")
         time.sleep(2)
-        if "Game Started" in output.inner_text():
+        if "Hello World" in output.inner_text():
             print("SUCCESS: write worked")
         else:
             print(f"FAILURE: write failed. Output: {output.inner_text()}")
