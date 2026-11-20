@@ -1,3 +1,5 @@
+> **No longer maintained.** This repository is no longer maintained. The live site is at https://ai-game.digitaleducationsafety.org. Active development now happens in the [foundation monorepo on GitLab](https://gitlab.com/desf-group/foundation).
+
 # AI Experience
 
 A web-based interactive AI experience.
